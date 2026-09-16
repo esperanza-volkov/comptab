@@ -1,0 +1,56 @@
+{
+  "name": "comptab",
+  "version": "0.1.0",
+  "description": "Generate bash/zsh/fish tab-completions for ANY CLI from its own --help. Deterministic, dependency-free, offline — no curated spec, no LLM.",
+  "type": "module",
+  "bin": {
+    "comptab": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "completion",
+    "completions",
+    "shell-completion",
+    "autocomplete",
+    "tab-completion",
+    "bash",
+    "zsh",
+    "fish",
+    "cli",
+    "help",
+    "argparse",
+    "generator",
+    "compgen",
+    "compdef",
+    "terminal"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esperanza-volkov/comptab.git"
+  },
+  "homepage": "https://github.com/esperanza-volkov/comptab#readme",
+  "bugs": {
+    "url": "https://github.com/esperanza-volkov/comptab/issues"
+  },
+  "author": "Esperanza Volkov"
+}
