@@ -1,6 +1,6 @@
 {
   "name": "comptab",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate bash/zsh/fish tab-completions for ANY CLI from its own --help. Deterministic, dependency-free, offline — no curated spec, no LLM.",
   "type": "module",
   "bin": {

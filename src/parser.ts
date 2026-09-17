@@ -139,6 +139,46 @@ function parseSynopsisBrackets(line: string): CmdOption[] {
   return out;
 }
 
+// Fallback: mine flags from a bracketed usage synopsis when a tool prints no
+// OPTIONS section at all — classic BSD-style tools (ssh, scp, sftp, and many
+// getopt programs) emit only:
+//   usage: ssh [-46AaCfGg...] [-B bind_interface] [-c cipher_spec] ...
+// From those brackets we recover:
+//   [-46Aa...]          → boolean short flags -4 -6 -A -a ...
+//   [-B bind_interface] → -B takes an argument
+//   [--long value]      → --long takes an argument (or --long=VAL)
+export function mineUsageFlags(usageLines: string[]): CmdOption[] {
+  const out: CmdOption[] = [];
+  const seen = new Set<string>();
+  const add = (flag: string, arg: string | null, argStyle: 'space' | 'equals' = 'space') => {
+    if (seen.has(flag)) return;
+    seen.add(flag);
+    out.push({ flags: [flag], arg, argStyle, description: '' });
+  };
+  for (const line of usageLines) {
+    for (const g of bracketGroups(line)) {
+      const grp = g.trim();
+      if (!grp.startsWith('-')) continue;
+      const tokens = grp.split(/\s+/);
+      const head = tokens[0];
+      const rest = tokens.slice(1).join(' ').trim();
+      if (head.startsWith('--')) {
+        const eq = head.match(/^(--[A-Za-z0-9][A-Za-z0-9-]*)(=(\S*))?$/);
+        if (!eq) continue;
+        if (eq[2] != null) add(eq[1], eq[3] || 'VALUE', 'equals');
+        else add(eq[1], rest || null);
+      } else if (/^-[A-Za-z0-9]{2,}$/.test(head) && tokens.length === 1) {
+        // Cluster of boolean short flags, e.g. "-46AaCfGg".
+        for (const ch of head.slice(1)) add('-' + ch, null);
+      } else if (/^-[A-Za-z0-9]$/.test(head)) {
+        // Single short flag, optionally with an argument placeholder.
+        add(head, rest || null);
+      }
+    }
+  }
+  return out;
+}
+
 export function parseHelp(text: string): ParsedHelp {
   const lines = text.split(/\r?\n/);
   const options: CmdOption[] = [];
@@ -258,5 +298,10 @@ export function parseHelp(text: string): ParsedHelp {
     return true;
   });
 
-  return { usage, options: deduped, subcommands };
+  // Fallback: if no OPTIONS section yielded anything, mine flags from the
+  // bracketed usage synopsis (ssh/scp/sftp and other synopsis-only tools).
+  const finalOptions =
+    deduped.length === 0 && usage.length ? mineUsageFlags(usage) : deduped;
+
+  return { usage, options: finalOptions, subcommands };
 }

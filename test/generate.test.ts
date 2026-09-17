@@ -77,3 +77,41 @@ describe('nested subcommand flags', () => {
     expect(generateBash(root)).toContain('--patch');
   });
 });
+
+const SSH_LIKE = `unknown option -- -
+usage: ssh [-46AaCfGg] [-B bind_interface] [-c cipher_spec]
+           [-i identity_file] [-J destination] destination [command]
+`;
+
+describe('usage-synopsis fallback (BSD-style tools with no OPTIONS section)', () => {
+  const p = parseHelp(SSH_LIKE);
+  it('mines bundled boolean short flags from the synopsis cluster', () => {
+    const flat = p.options.flatMap((o) => o.flags);
+    for (const f of ['-4', '-6', '-A', '-a', '-C', '-f', '-G', '-g']) {
+      expect(flat).toContain(f);
+    }
+  });
+  it('marks synopsis flags that take an argument', () => {
+    const B = p.options.find((o) => o.flags.includes('-B'));
+    const c = p.options.find((o) => o.flags.includes('-c'));
+    expect(B?.arg).toBeTruthy();
+    expect(c?.arg).toBeTruthy();
+  });
+  it('does not treat the trailing operand as a flag', () => {
+    const flat = p.options.flatMap((o) => o.flags);
+    expect(flat).not.toContain('destination');
+    expect(flat).not.toContain('command');
+  });
+  it('generates valid-looking completions for all shells', () => {
+    const n = node('ssh', SSH_LIKE);
+    expect(generateFish(n)).toContain('complete -c ssh -s B -r');
+    expect(generateBash(n)).toContain('_ssh_comptab');
+    expect(generateZsh(n)).toContain('#compdef ssh');
+  });
+  it('does NOT override a real OPTIONS section', () => {
+    // GIT_LIKE has a real Options section → fallback must stay dormant.
+    const g = parseHelp(GIT_LIKE);
+    expect(g.options.some((o) => o.flags.includes('--verbose'))).toBe(true);
+    expect(g.options.length).toBeLessThan(6);
+  });
+});

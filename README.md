@@ -93,7 +93,10 @@ comptab git --shell fish > ~/.config/fish/completions/git.fish
 1. Run `<cmd> --help` (then `-h`, then `help`, then `man <cmd>`).
 2. Parse the help into a structured model of options and subcommands. The
    parser is tuned against GNU/BSD getopt, Python argparse, Rust clap,
-   Go cobra/pflag, and Node commander/yargs help formats.
+   Go cobra/pflag, and Node commander/yargs help formats. Classic BSD tools
+   that print only a bracketed `usage:` synopsis and no OPTIONS section
+   (`ssh`, `scp`, `sftp`, …) are still covered — comptab mines the flags out
+   of the synopsis brackets.
 3. For each subcommand, repeat on `<cmd> <sub> --help` up to `--depth`.
 4. Emit an idiomatic completion script: fish `complete` lines gated by
    `__fish_use_subcommand`, a zsh `_arguments -C` dispatcher with `_describe`,
