@@ -2,6 +2,8 @@
 
 **Tab-completions for _any_ CLI — generated from its own `--help`.**
 
+📖 **[comptab website & docs →](https://esperanza-volkov.github.io/comptab/)**
+
 Point `comptab` at a command. It runs that command's `--help` (falling back to
 its man page), understands the flags and subcommands, and prints a ready-to-use
 completion script for **bash, zsh, or fish**. No curated spec to write, no
